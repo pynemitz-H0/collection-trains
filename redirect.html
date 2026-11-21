@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>Connexion…</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="font-family:system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0;color:#555">
+<p>Connexion en cours…</p>
+<script src="msal-redirect-bridge.min.js"></script>
+<script>
+  msalRedirectBridge.broadcastResponseToMainFrame().catch(function (e) {
+    document.body.innerHTML = '<p>Erreur de connexion : ' + (e && e.message ? e.message : e) +
+      '</p><p><a href="./">Retour à l\'application</a></p>';
+  });
+</script>
+</body>
+</html>

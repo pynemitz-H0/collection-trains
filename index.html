@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ma collection de trains</title>
+<meta name="theme-color" content="#1d5c47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Collection">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f4f2ee; --surface:#fff; --surface2:#ece9e3; --text:#1e2422; --muted:#6b726f; --line:#dedad2;
+  --accent:#1d5c47; --accent-ink:#fff; --accent-soft:#dcebe4; --danger:#b3261e; --warn:#9a6b00;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#141716;--surface:#1d2120;--surface2:#262b29;--text:#e8ebe9;--muted:#9aa29e;--line:#323836;
+    --accent:#4fae8a;--accent-ink:#0d1f18;--accent-soft:#21362e;--shadow:none}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);-webkit-text-size-adjust:100%}
+body{min-height:100vh;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.hidden{display:none!important}
+header.top{position:sticky;top:0;z-index:20;background:var(--accent);color:var(--accent-ink);
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;gap:10px}
+header.top h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top .sub{font-size:12px;opacity:.85;font-weight:400;display:block}
+.iconbtn{background:none;border:0;padding:8px;border-radius:10px;cursor:pointer;display:inline-grid;place-items:center;color:inherit}
+.iconbtn:hover{background:rgba(255,255,255,.12)}
+.iconbtn svg{width:22px;height:22px}
+.sync{font-size:12px;opacity:.9;display:flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;background:#9be3c4}
+.dot.saving{background:#ffd76a}.dot.error{background:#ff8a80}.dot.offline{background:#bbb}
+.wrap{max-width:920px;margin:0 auto;padding:12px}
+.banner{background:#fff4d6;color:#5c4300;border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:10px}
+@media (prefers-color-scheme:dark){.banner{background:#3a3220;color:#f1dca4}}
+.searchbar{display:flex;gap:8px;margin-bottom:8px}
+.search{flex:1;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.search input,.search input[type=search]{border:0;outline:0;background:none;padding:11px 0;width:100%;font-size:16px;border-radius:0}
+.search svg{width:18px;height:18px;color:var(--muted);flex:none}
+.btn{text-decoration:none;color:inherit;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.btn svg{width:18px;height:18px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--danger)}
+.btn.badge::after{content:attr(data-n);background:var(--accent);color:var(--accent-ink);border-radius:9px;font-size:11px;padding:1px 6px;margin-left:2px}
+.btn.badge[data-n="0"]::after{display:none}
+.filters{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.filters label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+select,input[type=text],input[type=number],input[type=date],input[type=search],textarea{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:16px;width:100%;min-width:0}
+textarea{min-height:90px;resize:vertical}
+.listinfo{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin:6px 2px 10px}
+.listinfo select{width:auto;padding:5px 8px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line);
+  display:flex;gap:12px;padding:10px;cursor:pointer;text-decoration:none;color:inherit;content-visibility:auto;contain-intrinsic-size:auto 96px}
+.card:active{transform:scale(.99)}
+.thumb{width:104px;height:74px;border-radius:9px;background:var(--surface2);flex:none;overflow:hidden;display:grid;place-items:center}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb svg{width:34px;height:34px;color:var(--muted);opacity:.5}
+.card .t{font-weight:600;line-height:1.25;margin-bottom:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card .s{font-size:13px;color:var(--muted);margin-bottom:5px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:11px;background:var(--accent-soft);color:var(--text);border-radius:6px;padding:2px 6px}
+.chip.muted{background:var(--surface2)}
+.empty{text-align:center;color:var(--muted);padding:50px 20px}
+.fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;border:0;
+  background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer;display:grid;place-items:center;z-index:15}
+.fab svg{width:28px;height:28px}
+/* Fiche */
+.photos{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px 12px;padding:0 12px}
+.photos img{height:220px;max-width:92vw;border-radius:12px;scroll-snap-align:start;object-fit:cover;background:var(--surface2);cursor:zoom-in}
+.photos .ph{height:220px;width:100%;border-radius:12px;background:var(--surface2);display:grid;place-items:center;color:var(--muted)}
+h2.title{font-size:22px;margin:4px 0 2px}
+.subtitle{color:var(--muted);margin-bottom:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.section>h3,.section>summary{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin:0;padding:12px 14px;cursor:pointer;font-weight:650}
+.section>summary{list-style:none;display:flex;justify-content:space-between}
+.section>summary::after{content:"▾";color:var(--muted)}
+.section:not([open])>summary::after{content:"▸"}
+dl.kv{display:grid;grid-template-columns:minmax(120px,40%) 1fr;margin:0;padding:0 14px 10px}
+dl.kv dt{color:var(--muted);font-size:14px;padding:7px 0;border-top:1px solid var(--line)}
+dl.kv dd{margin:0;padding:7px 0;border-top:1px solid var(--line);white-space:pre-wrap;word-break:break-word}
+.cvtable{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;padding:0 14px 12px}
+.cvtable div{background:var(--surface2);border-radius:8px;padding:6px 8px;font-size:13px}
+.cvtable b{color:var(--muted);font-weight:500;margin-right:4px}
+/* Formulaire */
+.form .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 12px;padding:0 14px 14px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.form label.wide{grid-column:1/-1}
+.form label.check{flex-direction:row;align-items:center;gap:8px;font-size:15px;color:var(--text)}
+.form label.check input{width:20px;height:20px}
+.form .req{color:var(--danger)}
+.cvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;padding:0 14px 14px}
+.cvgrid label{font-size:11px}
+.cvgrid input{padding:6px;font-size:15px}
+.phedit{display:flex;gap:8px;flex-wrap:wrap;padding:0 14px 14px}
+.phedit .p{position:relative;width:110px;height:80px;border-radius:9px;overflow:hidden;background:var(--surface2)}
+.phedit .p img{width:100%;height:100%;object-fit:cover}
+.phedit .p button{position:absolute;top:4px;border:0;border-radius:7px;background:rgba(0,0,0,.6);color:#fff;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1}
+.phedit .p .rm{right:4px}.phedit .p .main{left:4px}
+.phedit .p.first{outline:3px solid var(--accent);outline-offset:-3px}
+.phedit .add{width:110px;height:80px;border:2px dashed var(--line);border-radius:9px;display:grid;place-items:center;color:var(--muted);cursor:pointer;text-align:center;font-size:13px}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:flex-end;z-index:16}
+/* Stats */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.kpi .v{font-size:22px;font-weight:700}.kpi .l{font-size:12px;color:var(--muted)}
+.bars{padding:0 14px 12px}
+.bar{display:grid;grid-template-columns:minmax(90px,35%) 1fr auto;gap:8px;align-items:center;font-size:14px;margin:5px 0}
+.bar .track{background:var(--surface2);border-radius:6px;height:10px;overflow:hidden}
+.bar .fill{background:var(--accent);height:100%}
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:50;display:grid;place-items:center}
+.overlay img{max-width:100vw;max-height:100vh;object-fit:contain}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:grid;place-items:center;padding:20px}
+.modal .box{background:var(--surface);border-radius:16px;padding:18px;max-width:380px;width:100%}
+.modal .box p{margin:0 0 16px}
+.modal .row{display:flex;gap:8px;justify-content:flex-end}
+.menu{position:fixed;top:calc(56px + env(safe-area-inset-top));right:10px;z-index:40;background:var(--surface);color:var(--text);border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);min-width:220px;overflow:hidden}
+.menu button{display:flex;width:100%;gap:10px;align-items:center;border:0;background:none;padding:12px 14px;cursor:pointer;text-align:left}
+.menu button:hover{background:var(--surface2)}
+.menu svg{width:18px;height:18px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;
+  padding:10px 16px;border-radius:10px;z-index:70;font-size:14px;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.login{text-align:center;padding:60px 20px}
+.login svg{width:80px;height:80px;color:var(--accent)}
+.progress{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="iconbtn hidden" id="backBtn" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <h1 id="title">Ma collection<span class="sub" id="subtitle"></span></h1>
+  <span class="sync" id="sync"><span class="dot" id="syncDot"></span><span id="syncTxt"></span></span>
+  <button class="iconbtn" id="menuBtn" aria-label="Menu"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
+</header>
+<div class="menu hidden" id="menu">
+  <button data-act="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistiques</button>
+  <button data-act="refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>Actualiser</button>
+  <button data-act="csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Exporter en CSV (Excel)</button>
+  <button data-act="logout" id="logoutBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l-5-5 5-5M5 12h12"/></svg>Se déconnecter</button>
+</div>
+<main class="wrap" id="view"></main>
+<button class="fab hidden" id="fab" aria-label="Nouvel article"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+
+<script src="config.js"></script>
+<script src="msal-browser.min.js"></script>
+<script src="demo-data.js" onerror="void 0"></script>
+<script>
+"use strict";
+/* ================= Configuration & champs ================= */
+const CFG = Object.assign({clientId:"", folder:"Collection Trains", currency:"CHF"}, window.APP_CONFIG || {});
+const DEMO = !CFG.clientId;
+const SCOPES = ["Files.ReadWrite"];
+
+// t: text | num | date | yesno | bool | area ; list: propose les valeurs existantes ; card: affiché sur la carte
+const SECTIONS = [
+ {id:"gen", title:"Identification", open:true, fields:[
+  {k:"a_designation", l:"Désignation", req:true, wide:true},
+  {k:"a_type", l:"Type", list:true},
+  {k:"c_categorie", l:"Catégorie", list:true},
+  {k:"c_specificite", l:"Pays / spécificité", list:true},
+  {k:"c_echelle", l:"Échelle", list:true},
+  {k:"c_epoque", l:"Époque", list:true},
+  {k:"c_compagnie_nom", l:"Compagnie", list:true},
+  {k:"c_compagnie_serie", l:"Série", list:true},
+  {k:"c_compagnie_numex", l:"N° d'exemplaire"},
+  {k:"sup_numuic", l:"N° UIC"},
+  {k:"sup_service", l:"Service", list:true},
+  {k:"sup_essieux", l:"Essieux", list:true},
+ ]},
+ {id:"prod", title:"Modèle", open:true, fields:[
+  {k:"b_marque", l:"Marque", list:true},
+  {k:"b_reference", l:"Référence"},
+  {k:"b_edition", l:"Édition", list:true},
+  {k:"b_anneeprod", l:"Année de production", t:"num"},
+  {k:"b_boiteorig", l:"Boîte d'origine", t:"yesno"},
+ ]},
+ {id:"tech", title:"Technique", fields:[
+  {k:"d_moteur_type", l:"Courant (AC/DC)", list:true},
+  {k:"d_moteur_alim", l:"Alimentation", list:true},
+  {k:"d_moteur_pilotage", l:"Pilotage", list:true},
+  {k:"d_moteur_entrainenement", l:"Entraînement", list:true},
+  {k:"sup_bandage", l:"Bandages d'adhérence", t:"num"},
+  {k:"d_poids", l:"Poids (g)", t:"num"},
+  {k:"d_longueur", l:"Longueur (mm)", t:"num"},
+  {k:"d_couleur", l:"Couleur", list:true},
+  {k:"d_amortisseurs", l:"Amortisseurs", list:true},
+  {k:"d_attelage", l:"Attelage", list:true},
+  {k:"d_chassis", l:"Châssis", list:true},
+  {k:"d_tampons", l:"Tampons", list:true},
+  {k:"d_signaux", l:"Feux / signaux", list:true},
+  {k:"d_aminterieur", l:"Aménagement intérieur", list:true},
+  {k:"d_fumee", l:"Fumée", list:true},
+  {k:"d_sons", l:"Sons", list:true},
+ ]},
+ {id:"dig", title:"Digital", fields:[
+  {k:"d_moteur_digadr", l:"Adresse digitale"},
+  {k:"d_moteur_digsys", l:"Décodeur / système", list:true},
+  {k:"h_vit_max", l:"Vitesse max", t:"num"},
+  {k:"h_vit_min", l:"Vitesse min", t:"num"},
+  {k:"h_acc", l:"Accélération", t:"num"},
+  {k:"h_dec", l:"Freinage", t:"num"},
+ ], cv:true},
+ {id:"pos", title:"Achat et rangement", open:true, fields:[
+  {k:"e_quantite", l:"Quantité", t:"num"},
+  {k:"e_etat", l:"État", list:true},
+  {k:"e_stockage", l:"Rangement", list:true},
+  {k:"e_achatdate", l:"Date d'achat", t:"date"},
+  {k:"e_achatprix", l:"Prix d'achat", t:"num", money:true},
+  {k:"e_achatfournisseur", l:"Fournisseur", list:true},
+  {k:"e_estimprix", l:"Prix estimé", t:"num", money:true},
+  {k:"sup_est_val", l:"Valeur estimée", t:"num", money:true},
+  {k:"sup_est_ref", l:"Source de l'estimation"},
+  {k:"e_daterevi", l:"Date de révision", t:"date"},
+  {k:"e_tpsuti", l:"Temps d'utilisation"},
+  {k:"g_select", l:"Sélectionné", t:"bool"},
+ ]},
+ {id:"proto", title:"Véhicule réel", fields:[
+  {k:"hi_1app", l:"Appellation"},
+  {k:"hi_2con", l:"Constructeur"},
+  {k:"hi_3ann", l:"Année de mise en service", t:"num"},
+  {k:"hi_4pui", l:"Puissance"},
+  {k:"hi_5nbm", l:"Nombre construit", t:"num"},
+  {k:"hi_6vmax", l:"Vitesse max (km/h)", t:"num"},
+  {k:"hi_7vser", l:"Vitesse de service", t:"num"},
+  {k:"hi_8drm", l:"Ø roues motrices", t:"num"},
+  {k:"hi_9drp", l:"Ø roues porteuses", t:"num"},
+  {k:"hi_ache", l:"Info A (ache)", t:"num"},
+  {k:"hi_bchs", l:"Info B (bchs)", t:"num"},
+  {k:"hi_cchu", l:"Info C (cchu)", t:"num"},
+  {k:"hi_dvpu", l:"Info D (dvpu)", t:"num"},
+  {k:"hi_eec", l:"Info E (eec)"},
+  {k:"hi_ftra", l:"Info F (ftra)"},
+  {k:"hi_gcom", l:"Info G (gcom)", wide:true},
+ ]},
+ {id:"free", title:"Champs libres", fields:[
+  {k:"sup_texte1", l:"Texte libre 1"},{k:"sup_texte2", l:"Texte libre 2"},{k:"sup_texte3", l:"Texte libre 3"},
+  {k:"sup_num1", l:"Nombre libre 1", t:"num"},{k:"sup_num2", l:"Nombre libre 2", t:"num"},{k:"sup_num3", l:"Nombre libre 3", t:"num"},
+ ]},
+ {id:"com", title:"Commentaires", open:true, fields:[
+  {k:"f_commentaires", l:"Commentaires", t:"area", wide:true},
+ ]},
+];
+const ALL_FIELDS = SECTIONS.flatMap(s => s.fields);
+const FIELD = Object.fromEntries(ALL_FIELDS.map(f => [f.k, f]));
+const FILTERS = ["c_echelle","a_type","c_categorie","c_compagnie_nom","b_marque","c_epoque","e_etat","e_stockage"];
+const SORTS = {
+  designation:{l:"Désignation", f:(a,b)=>cmp(a.a_designation,b.a_designation)},
+  marque:{l:"Marque / référence", f:(a,b)=>cmp(a.b_marque,b.b_marque)||cmp(a.b_reference,b.b_reference)},
+  achat:{l:"Date d'achat (récent)", f:(a,b)=>cmp(b.e_achatdate||"",a.e_achatdate||"")},
+  prix:{l:"Prix d'achat (élevé)", f:(a,b)=>(b.e_achatprix||0)-(a.e_achatprix||0)},
+  ajout:{l:"Derniers ajoutés", f:(a,b)=>b.id-a.id},
+  adresse:{l:"Adresse digitale", f:(a,b)=>digAdr(a)-digAdr(b)||cmp(a.a_designation,b.a_designation)},
+};
+
+// Adresse digitale en nombre (« 0300 » → 300) ; sans adresse = en fin de liste
+function digAdr(it){ const n = parseInt(String(it.d_moteur_digadr ?? "").replace(/\D/g,""), 10); return Number.isFinite(n) && n > 0 ? n : Infinity; }
+
+/* ================= Utilitaires ================= */
+const $ = (s, r=document) => r.querySelector(s);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const collator = new Intl.Collator("fr", {numeric:true, sensitivity:"base"});
+function cmp(a,b){ return collator.compare(String(a ?? ""), String(b ?? "")); }
+const isEmpty = v => v === null || v === undefined || v === "";
+const money = v => { if (isEmpty(v)) return ""; const n = Number(v); return n.toLocaleString("fr-CH",{minimumFractionDigits:Number.isInteger(n)?0:2, maximumFractionDigits:2}) + " " + CFG.currency; };
+const fmtDate = v => { if(!v) return ""; const [y,m,d]=v.split("-"); return `${d}.${m}.${y}`; };
+function fmt(f, v){
+  if (isEmpty(v)) return "";
+  if (f.money) return money(v);
+  if (f.t === "date") return fmtDate(v);
+  if (f.t === "bool") return v ? "Oui" : "Non";
+  return String(v);
+}
+function toast(msg, ms=2600){
+  const t = document.createElement("div"); t.className="toast"; t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(), ms);
+}
+function confirmBox(msg, okLabel="Confirmer", danger=false){
+  return new Promise(res => {
+    const m = document.createElement("div"); m.className="modal";
+    m.innerHTML = `<div class="box"><p>${esc(msg)}</p><div class="row"><button class="btn" data-r="0">Annuler</button><button class="btn ${danger?"danger":"primary"}" data-r="1">${esc(okLabel)}</button></div></div>`;
+    m.addEventListener("click", e => { const r = e.target.dataset.r; if (r !== undefined || e.target === m){ m.remove(); res(r === "1"); } });
+    document.body.appendChild(m);
+  });
+}
+const ICON_LOCO = `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><rect x="6" y="16" width="36" height="17" rx="4"/><path d="M12 16l3-6h8M33 16l-3-6h-6M6 24h36"/><circle cx="14" cy="37" r="3"/><circle cx="34" cy="37" r="3"/></svg>`;
+
+/* ================= Petit stockage local (IndexedDB) ================= */
+const idb = {
+  _db:null,
+  open(){ if(this._db) return Promise.resolve(this._db);
+    return new Promise((res,rej)=>{ let r; try{ r = indexedDB.open("collection-trains",1);}catch(e){return rej(e);}
+      r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>{this._db=r.result;res(this._db)}; r.onerror=()=>rej(r.error); }); },
+  async get(k){ try{ const db=await this.open(); return await new Promise((res,rej)=>{const q=db.transaction("kv").objectStore("kv").get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error);}); }catch{ return undefined; } },
+  async set(k,v){ try{ const db=await this.open(); await new Promise((res,rej)=>{const t=db.transaction("kv","readwrite"); t.objectStore("kv").put(v,k); t.oncomplete=res; t.onerror=()=>rej(t.error);}); }catch{} },
+  async del(k){ try{ const db=await this.open(); await new Promise(res=>{const t=db.transaction("kv","readwrite"); t.objectStore("kv").delete(k); t.oncomplete=res; t.onerror=res;}); }catch{} },
+};
+
+/* ================= Accès aux données ================= */
+class ConflictError extends Error { constructor(){ super("conflict"); } }
+const emptyCollection = () => ({format:"collection-trains", version:1, updated:new Date().toISOString(), nextId:1, items:[]});
+
+// Mode démo : données d'exemple, conservées dans ce navigateur
+class DemoStore {
+  constructor(){ this.blobs = {}; }
+  async init(){ return true; }
+  async load(){
+    const saved = await idb.get("demo");
+    const data = saved || structuredClone(window.DEMO_DATA || emptyCollection());
+    return {data, etag:"demo"};
+  }
+  async save(data){ await idb.set("demo", data); return "demo"; }
+  async photoUrls(){
+    const m = {}; const P = window.DEMO_PHOTOS || {};
+    for (const k in P) m[k] = {thumb:P[k], large:P[k], full:P[k]};
+    for (const k in this.blobs) m[k] = {thumb:this.blobs[k], large:this.blobs[k], full:this.blobs[k]};
+    return m;
+  }
+  async upload(name, blob){ this.blobs[name] = URL.createObjectURL(blob); return {thumb:this.blobs[name], large:this.blobs[name], full:this.blobs[name]}; }
+  async remove(){ }
+  async fullUrl(name){ return (await this.photoUrls())[name]?.full; }
+  logout(){ idb.del("demo").then(()=>location.reload()); }
+}
+
+// Mode réel : OneDrive personnel via Microsoft Graph
+class GraphStore {
+  async init(){
+    this.msal = new msal.PublicClientApplication({
+      auth:{clientId:CFG.clientId, authority:"https://login.microsoftonline.com/consumers",
+            redirectUri:new URL("redirect.html", location.href).href},
+      cache:{cacheLocation:"localStorage"},
+    });
+    await this.msal.initialize();
+    const r = await this.msal.handleRedirectPromise().catch(e => { console.error(e); return null; });
+    if (r && r.account) this.msal.setActiveAccount(r.account);
+    const acc = this.msal.getActiveAccount() || this.msal.getAllAccounts()[0];
+    if (acc) { this.msal.setActiveAccount(acc); return true; }
+    return false;
+  }
+  login(){ return this.msal.loginRedirect({scopes:SCOPES, prompt:"select_account"}); }
+  logout(){ return this.msal.logoutRedirect({postLogoutRedirectUri:new URL("./", location.href).href}); }
+  async token(){
+    try { return (await this.msal.acquireTokenSilent({scopes:SCOPES})).accessToken; }
+    catch(e){
+      if (e instanceof msal.InteractionRequiredAuthError){ await this.msal.acquireTokenRedirect({scopes:SCOPES}); }
+      throw e;
+    }
+  }
+  path(rel){ return "/me/drive/root:/" + (CFG.folder + "/" + rel).split("/").map(encodeURIComponent).join("/"); }
+  async g(url, opts={}){
+    const t = await this.token();
+    const full = url.startsWith("http") ? url : "https://graph.microsoft.com/v1.0" + url;
+    return fetch(full, {...opts, headers:{Authorization:"Bearer "+t, ...(opts.headers||{})}});
+  }
+  async load(){
+    const r = await this.g(this.path("collection.json"));
+    if (r.status === 404) return {data:emptyCollection(), etag:null};
+    if (!r.ok) throw new Error("Lecture OneDrive impossible ("+r.status+")");
+    const meta = await r.json();
+    const c = await fetch(meta["@microsoft.graph.downloadUrl"], {cache:"no-store"});
+    if (!c.ok) throw new Error("Téléchargement impossible ("+c.status+")");
+    return {data:await c.json(), etag:meta.eTag};
+  }
+  async save(data, etag){
+    const headers = {"Content-Type":"application/json"};
+    if (etag) headers["If-Match"] = etag;
+    const r = await this.g(this.path("collection.json") + ":/content" + (etag ? "" : "?@microsoft.graph.conflictBehavior=fail"),
+      {method:"PUT", headers, body:JSON.stringify(data)});
+    if (r.status === 412 || r.status === 409) throw new ConflictError();
+    if (!r.ok) throw new Error("Enregistrement impossible ("+r.status+")");
+    return (await r.json()).eTag;
+  }
+  async photoUrls(){
+    const m = {};
+    let url = this.path("photos") + ":/children?$expand=thumbnails&$top=200";
+    while (url){
+      const r = await this.g(url);
+      if (r.status === 404) break;
+      if (!r.ok) throw new Error("Photos inaccessibles ("+r.status+")");
+      const j = await r.json();
+      for (const it of j.value){
+        const th = (it.thumbnails && it.thumbnails[0]) || {};
+        m[it.name] = {thumb:th.medium?.url || th.small?.url, large:th.large?.url || th.medium?.url, full:it["@microsoft.graph.downloadUrl"], id:it.id};
+      }
+      url = j["@odata.nextLink"] || null;
+    }
+    return m;
+  }
+  async upload(name, blob){
+    const r = await this.g(this.path("photos/"+name) + ":/content", {method:"PUT", headers:{"Content-Type":blob.type||"image/jpeg"}, body:blob});
+    if (!r.ok) throw new Error("Envoi de la photo impossible ("+r.status+")");
+    const local = URL.createObjectURL(blob);
+    return {thumb:local, large:local, full:local};
+  }
+  async remove(name){ try{ await this.g(this.path("photos/"+name), {method:"DELETE"}); }catch(e){ console.warn(e); } }
+  async fullUrl(name){
+    const r = await this.g(this.path("photos/"+name));
+    return r.ok ? (await r.json())["@microsoft.graph.downloadUrl"] : null;
+  }
+}
+
+/* ================= État de l'application ================= */
+const S = {
+  store: DEMO ? new DemoStore() : new GraphStore(),
+  data:null, etag:null, byId:new Map(), photos:{}, photosLoaded:false,
+  q:"", filters:{}, sort:"designation", showFilters:false,
+};
+try { Object.assign(S, JSON.parse(localStorage.getItem("ui") || "{}")); } catch {}
+function saveUi(){ try{ localStorage.setItem("ui", JSON.stringify({filters:S.filters, sort:S.sort})); }catch{} }
+
+function reindex(){
+  S.byId = new Map();
+  for (const it of S.data.items){
+    it._s = norm(ALL_FIELDS.map(f => it[f.k]).filter(v => !isEmpty(v)).join(" "));
+    S.byId.set(it.id, it);
+  }
+}
+function setSync(state, txt){
+  $("#syncDot").className = "dot " + state;
+  $("#syncTxt").textContent = txt ?? ({ok:"", saving:"Enregistrement…", error:"Erreur", offline:"Hors ligne", loading:"Chargement…"}[state] || "");
+}
+function stripPrivate(d){ return {...d, items:d.items.map(({_s, ...rest}) => rest)}; }
+
+// Applique une modification et l'enregistre ; en cas de conflit (autre appareil), recharge et réapplique.
+async function commit(op){
+  setSync("saving");
+  for (let attempt = 0; attempt < 3; attempt++){
+    const draft = structuredClone(stripPrivate(S.data));
+    const result = op(draft);
+    draft.updated = new Date().toISOString();
+    try {
+      S.etag = await S.store.save(draft, S.etag);
+      S.data = draft; reindex();
+      await idb.set("cache", {data:draft, etag:S.etag});
+      setSync("ok"); return result ?? true;
+    } catch(e){
+      if (e instanceof ConflictError){
+        const fresh = await S.store.load(); S.data = fresh.data; S.etag = fresh.etag; reindex(); continue;
+      }
+      console.error(e);
+      setSync(navigator.onLine ? "error" : "offline");
+      toast(navigator.onLine ? "Échec de l'enregistrement : " + e.message : "Hors ligne : modification non enregistrée");
+      return null;
+    }
+  }
+  setSync("error"); toast("Conflit d'enregistrement, réessaie."); return null;
+}
+
+async function loadPhotos(force){
+  if (S.photosLoaded && !force) return;
+  try { const fresh = await S.store.photoUrls(); S.photos = Object.assign({}, S.photos, fresh); S.photosLoaded = true; S.photosAt = Date.now(); }
+  catch(e){ console.warn(e); }
+}
+function photoSrc(name, size="thumb"){ return S.photos[name]?.[size] || S.photos[name]?.thumb || ""; }
+
+/* ================= Rendu ================= */
+const view = $("#view");
+function header(title, sub, back){
+  $("#title").firstChild.textContent = title;
+  $("#subtitle").textContent = sub || "";
+  $("#backBtn").classList.toggle("hidden", !back);
+  document.title = title;
+}
+
+function filteredItems(){
+  const q = norm(S.q).split(/\s+/).filter(Boolean);
+  let list = S.data.items.filter(it => {
+    for (const k in S.filters){ if (S.filters[k] && (it[k] ?? "") !== S.filters[k]) return false; }
+    return q.every(w => it._s.includes(w));
+  });
+  return list.sort(SORTS[S.sort]?.f || SORTS.designation.f);
+}
+function uniq(k){
+  const s = new Map();
+  for (const it of S.data.items){ const v = it[k]; if (!isEmpty(v)) s.set(String(v), (s.get(String(v))||0)+1); }
+  return [...s.entries()].sort((a,b)=>cmp(a[0],b[0]));
+}
+
+function cardHtml(it){
+  const ph = it.photos && it.photos[0];
+  const sub = [it.b_marque, it.b_reference].filter(Boolean).join(" · ");
+  const chips = [it.c_echelle, it.c_compagnie_nom, it.c_epoque && "Ép. " + it.c_epoque].filter(Boolean)
+    .map(c => `<span class="chip">${esc(c)}</span>`).join("");
+  const qty = it.e_quantite > 1 ? `<span class="chip muted">×${it.e_quantite}</span>` : "";
+  const adr = S.sort === "adresse" && !isEmpty(it.d_moteur_digadr) ? `<span class="chip muted">Adr. ${esc(it.d_moteur_digadr)}</span>` : "";
+  return `<a class="card" href="#item-${it.id}">
+    <div class="thumb">${ph ? `<img loading="lazy" data-ph="${esc(ph)}" alt="">` : ICON_LOCO}</div>
+    <div style="min-width:0"><div class="t">${esc(it.a_designation || "(sans désignation)")}</div>
+    <div class="s">${esc(sub)}</div><div class="chips">${adr}${chips}${qty}</div></div></a>`;
+}
+
+let io;
+function hydrateImages(root){
+  const imgs = root.querySelectorAll("img[data-ph]");
+  const apply = img => { const src = photoSrc(img.dataset.ph, img.dataset.size || "thumb"); if (src) { img.src = src; img.removeAttribute("data-ph"); } };
+  if (S.photosLoaded && !DEMO && Date.now() - S.photosAt > 30*60*1000) S.photosLoaded = false; // liens de vignettes OneDrive temporaires
+  if (!S.photosLoaded){ loadPhotos().then(() => { if (S.photosLoaded) hydrateImages(root); }); }
+  if (!("IntersectionObserver" in window)) { imgs.forEach(apply); return; }
+  io?.disconnect();
+  io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ apply(e.target); io.unobserve(e.target); } }), {rootMargin:"300px"});
+  imgs.forEach(i => io.observe(i));
+}
+
+function renderList(){
+  header("Ma collection", S.data.items.length + " articles");
+  $("#fab").classList.remove("hidden");
+  const items = filteredItems();
+  const nf = Object.values(S.filters).filter(Boolean).length;
+  const filtersHtml = FILTERS.map(k => `<label>${esc(FIELD[k].l)}<select data-f="${k}"><option value="">Tous</option>${
+      uniq(k).map(([v,n]) => `<option value="${esc(v)}" ${S.filters[k]===v?"selected":""}>${esc(v)} (${n})</option>`).join("")}</select></label>`).join("")
+    + `<label style="justify-content:flex-end"><button class="btn" id="clearF" type="button">Effacer les filtres</button></label>`;
+  view.innerHTML = `
+    ${DEMO ? `<div class="banner">Mode démo : les données restent dans ce navigateur. Une fois OneDrive configuré, l'application lira et enregistrera ta vraie collection.</div>` : ""}
+    <div class="searchbar">
+      <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="Rechercher (désignation, référence, n°…)" value="${esc(S.q)}" autocomplete="off"></div>
+      <button class="btn badge" id="fBtn" data-n="${nf}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>Filtres</button>
+    </div>
+    <div class="filters ${S.showFilters?"":"hidden"}" id="filters">${filtersHtml}</div>
+    <div class="listinfo"><span>${items.length} résultat${items.length>1?"s":""}</span>
+      <select id="sort">${Object.entries(SORTS).map(([k,s])=>`<option value="${k}" ${S.sort===k?"selected":""}>${s.l}</option>`).join("")}</select></div>
+    <div class="grid" id="grid">${items.length ? items.map(cardHtml).join("") : `<div class="empty">${S.data.items.length ? "Aucun article ne correspond." : "La collection est vide. Ajoute un premier article avec le bouton +."}</div>`}</div>`;
+  const q = $("#q");
+  q.addEventListener("input", () => { S.q = q.value; updateGrid(); });
+  $("#fBtn").onclick = () => { S.showFilters = !S.showFilters; $("#filters").classList.toggle("hidden", !S.showFilters); };
+  $("#filters").addEventListener("change", e => { const k = e.target.dataset.f; if (k){ S.filters[k] = e.target.value; saveUi(); renderList(); } });
+  $("#clearF").onclick = () => { S.filters = {}; saveUi(); renderList(); };
+  $("#sort").onchange = e => { S.sort = e.target.value; saveUi(); updateGrid(); };
+  hydrateImages(view);
+  if (S.scrollY){ window.scrollTo(0, S.scrollY); S.scrollY = 0; }
+}
+function updateGrid(){
+  const items = filteredItems();
+  $("#grid").innerHTML = items.length ? items.map(cardHtml).join("") : `<div class="empty">Aucun article ne correspond.</div>`;
+  $(".listinfo span").textContent = items.length + " résultat" + (items.length>1?"s":"");
+  hydrateImages($("#grid"));
+}
+
+function renderItem(id){
+  const it = S.byId.get(id);
+  if (!it) { location.hash = "#"; return; }
+  header(it.a_designation || "Article", [it.b_marque, it.b_reference].filter(Boolean).join(" · "), true);
+  $("#fab").classList.add("hidden");
+  const photos = (it.photos||[]).length
+    ? it.photos.map(p => `<img data-ph="${esc(p)}" data-size="large" data-name="${esc(p)}" alt="">`).join("")
+    : `<div class="ph">${ICON_LOCO}</div>`;
+  const sections = SECTIONS.map(sec => {
+    const rows = sec.fields.filter(f => f.k !== "a_designation" && !isEmpty(it[f.k]) && !(f.t==="bool" && !it[f.k]))
+      .map(f => `<dt>${esc(f.l)}</dt><dd>${esc(fmt(f, it[f.k]))}</dd>`).join("");
+    const cvs = sec.cv && it.cv ? Object.entries(it.cv).filter(([,v]) => !isEmpty(v)) : [];
+    if (!rows && !cvs.length) return "";
+    return `<section class="section"><h3>${esc(sec.title)}</h3>${rows ? `<dl class="kv">${rows}</dl>` : ""}
+      ${cvs.length ? `<div style="padding:0 14px 6px;color:var(--muted);font-size:13px">CV du décodeur</div><div class="cvtable">${cvs.map(([k,v])=>`<div><b>CV${esc(k)}</b>${esc(v)}</div>`).join("")}</div>` : ""}</section>`;
+  }).join("");
+  view.innerHTML = `<div class="photos" id="photos">${photos}</div>
+    <h2 class="title">${esc(it.a_designation || "(sans désignation)")}</h2>
+    <div class="subtitle">${esc([it.c_echelle, it.c_compagnie_nom, it.c_epoque && "Époque " + it.c_epoque].filter(Boolean).join(" · "))}</div>
+    <div class="actions">
+      <a class="btn primary" href="#edit-${it.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Modifier</a>
+      <a class="btn" href="#new-${it.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Dupliquer</a>
+      <button class="btn danger" id="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Supprimer</button>
+    </div>${sections}`;
+  hydrateImages(view);
+  $("#photos").onclick = async e => {
+    const name = e.target.dataset?.name; if (!name) return;
+    const ov = document.createElement("div"); ov.className = "overlay";
+    ov.innerHTML = `<img src="${esc(photoSrc(name,"large"))}" alt="">`; ov.onclick = () => ov.remove();
+    document.body.appendChild(ov);
+    const full = await S.store.fullUrl(name).catch(()=>null);
+    if (full && ov.isConnected) ov.firstChild.src = full;
+  };
+  $("#del").onclick = async () => {
+    if (!await confirmBox(`Supprimer « ${it.a_designation} » de la collection ?`, "Supprimer", true)) return;
+    const ok = await commit(d => { d.items = d.items.filter(x => x.id !== it.id); });
+    if (ok){ for (const p of it.photos||[]) S.store.remove(p); toast("Article supprimé"); location.hash = "#"; }
+  };
+}
+
+/* ---------- Formulaire création / modification ---------- */
+let editState = null;
+function renderEdit(id, copyFrom){
+  const isNew = id === null;
+  const src = isNew ? (copyFrom ? S.byId.get(copyFrom) : null) : S.byId.get(id);
+  if (!isNew && !src) { location.hash = "#"; return; }
+  const it = src ? structuredClone(src) : {e_quantite:1};
+  if (isNew && copyFrom){ it.photos = []; it.a_designation = (it.a_designation || "") + " (copie)"; }
+  editState = {id, photos:(isNew ? [] : (it.photos||[]).map(n => ({name:n}))), removed:[]};
+  header(isNew ? (copyFrom ? "Copie d'article" : "Nouvel article") : "Modifier", isNew ? "" : it.a_designation, true);
+  $("#fab").classList.add("hidden");
+
+  const lists = new Set(); let dl = "";
+  const input = f => {
+    const v = it[f.k];
+    if (f.list) { lists.add(f.k); }
+    switch (f.t){
+      case "num": return `<input type="number" step="any" inputmode="decimal" name="${f.k}" value="${esc(v)}">`;
+      case "date": return `<input type="date" name="${f.k}" value="${esc(v)}">`;
+      case "area": return `<textarea name="${f.k}">${esc(v)}</textarea>`;
+      case "yesno": return `<select name="${f.k}"><option value=""></option>${["Oui","Non"].map(o=>`<option ${v===o?"selected":""}>${o}</option>`).join("")}</select>`;
+      default: return `<input type="text" name="${f.k}" value="${esc(v)}" ${f.list?`list="dl_${f.k}"`:""} autocomplete="off" ${f.req?"required":""}>`;
+    }
+  };
+  const field = f => f.t === "bool"
+    ? `<label class="check"><input type="checkbox" name="${f.k}" ${it[f.k]?"checked":""}>${esc(f.l)}</label>`
+    : `<label class="${f.wide?"wide":""}"><span>${esc(f.l)}${f.req?' <span class="req">*</span>':""}</span>${input(f)}</label>`;
+  const cvGrid = () => `<details style="margin:0 14px 14px" ${it.cv && Object.keys(it.cv).length ? "open" : ""}><summary style="cursor:pointer;color:var(--muted);font-size:14px;padding:4px 0 8px">CV du décodeur (1 à 52)</summary><div class="cvgrid" style="padding:0">${
+      Array.from({length:52}, (_,i)=>i+1).map(n=>`<label>CV${n}<input type="number" inputmode="numeric" name="cv_${n}" value="${esc(it.cv?.[n] ?? "")}"></label>`).join("")}</div></details>`;
+  const secs = SECTIONS.map(s => `<details class="section" ${s.open?"open":""}><summary>${esc(s.title)}</summary>
+      <div class="fields">${s.fields.map(field).join("")}</div>${s.cv?cvGrid():""}</details>`).join("");
+  for (const k of lists) dl += `<datalist id="dl_${k}">${uniq(k).map(([v])=>`<option value="${esc(v)}">`).join("")}</datalist>`;
+
+  view.innerHTML = `<form class="form" id="form" novalidate>
+    <details class="section" open><summary>Photos</summary><div class="phedit" id="phedit"></div>
+      <input type="file" id="file" accept="image/*" multiple class="hidden"></details>
+    ${secs}${dl}</form>
+    <div class="savebar"><span class="progress" id="prog" style="margin-right:auto;align-self:center"></span>
+      <button class="btn" id="cancel" type="button">Annuler</button>
+      <button class="btn primary" id="save" type="button">Enregistrer</button></div>`;
+  drawPhotoEditor();
+  $("#file").onchange = async e => {
+    for (const f of e.target.files){
+      try { const blob = await resizeImage(f); editState.photos.push({blob, url:URL.createObjectURL(blob)}); }
+      catch(err){ toast("Image illisible : " + f.name); }
+    }
+    e.target.value = ""; drawPhotoEditor();
+  };
+  $("#cancel").onclick = () => history.back();
+  $("#save").onclick = () => saveForm(isNew);
+}
+function drawPhotoEditor(){
+  const box = $("#phedit");
+  box.innerHTML = editState.photos.map((p,i) => `<div class="p ${i===0?"first":""}">
+      <img ${p.url ? `src="${esc(p.url)}"` : `data-ph="${esc(p.name)}"`} alt="">
+      ${i>0?`<button type="button" class="main" data-main="${i}" title="Photo principale">★</button>`:""}
+      <button type="button" class="rm" data-rm="${i}" title="Retirer">✕</button></div>`).join("")
+    + `<div class="add" id="addPh">＋<br>Ajouter<br>une photo</div>`;
+  hydrateImages(box);
+  $("#addPh").onclick = () => $("#file").click();
+  box.onclick = e => {
+    const rm = e.target.dataset.rm, mn = e.target.dataset.main;
+    if (rm !== undefined){ const [p] = editState.photos.splice(+rm,1); if (p.name) editState.removed.push(p.name); drawPhotoEditor(); }
+    if (mn !== undefined){ const [p] = editState.photos.splice(+mn,1); editState.photos.unshift(p); drawPhotoEditor(); }
+  };
+}
+async function resizeImage(file, max=1600){
+  const bmp = await createImageBitmap(file);
+  const r = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width*r); c.height = Math.round(bmp.height*r);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return await new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
+}
+async function saveForm(isNew){
+  const form = $("#form"), fd = new FormData(form), vals = {};
+  for (const f of ALL_FIELDS){
+    if (f.t === "bool"){ vals[f.k] = form.elements[f.k].checked ? 1 : 0; continue; }
+    const raw = String(fd.get(f.k) ?? "").trim();
+    vals[f.k] = raw === "" ? null : (f.t === "num" ? Number(raw.replace(",", ".")) : raw);
+  }
+  if (!vals.a_designation){ toast("La désignation est obligatoire"); form.elements.a_designation.focus(); return; }
+  const cv = {};
+  for (let n = 1; n <= 52; n++){ const v = String(fd.get("cv_"+n) ?? "").trim(); if (v !== "") cv[n] = Number(v); }
+  vals.cv = cv;
+
+  const btn = $("#save"); btn.disabled = true;
+  const prog = $("#prog");
+  // 1) envoi des nouvelles photos
+  const names = [];
+  const pending = editState.photos.filter(p => p.blob).length; let done = 0;
+  try {
+    for (const p of editState.photos){
+      if (p.blob){
+        prog.textContent = `Envoi des photos ${++done}/${pending}…`;
+        const name = "p" + Date.now().toString(36) + Math.random().toString(36).slice(2,6) + ".jpg";
+        S.photos[name] = await S.store.upload(name, p.blob);
+        p.name = name; delete p.blob;
+      }
+      names.push(p.name);
+    }
+  } catch(e){ toast(e.message); btn.disabled = false; prog.textContent = ""; return; }
+  vals.photos = names;
+  prog.textContent = "Enregistrement…";
+  // 2) enregistrement de la fiche
+  const id = editState.id;
+  const newId = await commit(d => {
+    if (isNew){
+      const nid = d.nextId || (Math.max(0, ...d.items.map(i=>i.id)) + 1);
+      d.nextId = nid + 1; d.items.push({id:nid, ...vals}); return nid;
+    }
+    const i = d.items.findIndex(x => x.id === id);
+    if (i < 0) d.items.push({id, ...vals}); else d.items[i] = {...d.items[i], ...vals};
+    return id;
+  });
+  btn.disabled = false; prog.textContent = "";
+  if (newId === null) return;
+  for (const n of editState.removed) S.store.remove(n);
+  toast(isNew ? "Article ajouté" : "Modifications enregistrées");
+  location.replace("#item-" + newId);
+}
+
+/* ---------- Statistiques ---------- */
+function renderStats(){
+  header("Statistiques", "", true); $("#fab").classList.add("hidden");
+  const items = S.data.items;
+  const q = it => Number(it.e_quantite) || 1;
+  const sum = (k) => items.reduce((s,it) => s + (Number(it[k])||0) * q(it), 0);
+  const est = items.reduce((s,it) => s + (Number(it.sup_est_val ?? it.e_estimprix)||0) * q(it), 0);
+  const kpis = [["Articles", items.length], ["Pièces (quantités)", items.reduce((s,it)=>s+q(it),0)],
+    ["Total payé", money(sum("e_achatprix"))], ["Valeur estimée", money(est)]];
+  const block = (k, top=12) => {
+    const u = uniq(k).sort((a,b)=>b[1]-a[1]).slice(0, top); if (!u.length) return "";
+    const max = u[0][1];
+    return `<section class="section"><h3>Par ${esc(FIELD[k].l.toLowerCase())}</h3><div class="bars">${u.map(([v,n])=>
+      `<div class="bar"><span>${esc(v)}</span><div class="track"><div class="fill" style="width:${(n/max*100).toFixed(1)}%"></div></div><b>${n}</b></div>`).join("")}</div></section>`;
+  };
+  view.innerHTML = `<div class="kpis">${kpis.map(([l,v])=>`<div class="kpi"><div class="v">${esc(v)}</div><div class="l">${esc(l)}</div></div>`).join("")}</div>
+    ${block("c_echelle")}${block("a_type")}${block("b_marque")}${block("c_compagnie_nom")}${block("c_epoque")}${block("e_etat")}`;
+}
+
+/* ---------- Export CSV ---------- */
+function exportCsv(){
+  const cols = [{k:"id", l:"N°"}, ...ALL_FIELDS, {k:"cv", l:"CV"}, {k:"photos", l:"Photos"}];
+  const cell = v => { v = v ?? ""; if (typeof v === "object") v = Array.isArray(v) ? v.join(", ") : Object.entries(v).map(([a,b])=>`CV${a}=${b}`).join(" ");
+    v = String(v); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; };
+  const lines = [cols.map(c=>cell(c.l)).join(";"), ...S.data.items.map(it => cols.map(c=>cell(it[c.k])).join(";"))];
+  const blob = new Blob(["﻿" + lines.join("\r\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "collection-trains-" + new Date().toISOString().slice(0,10) + ".csv"; a.click();
+}
+
+/* ================= Navigation ================= */
+function route(){
+  $("#menu").classList.add("hidden");
+  if (!S.data) return;
+  const h = location.hash.replace(/^#\/?/, "");
+  const [p, a] = h.split(/[-\/]/);
+  if (p !== "") window.scrollTo(0,0);
+  if (p === "item") renderItem(+a);
+  else if (p === "edit") renderEdit(+a);
+  else if (p === "new") renderEdit(null, a ? +a : null);
+  else if (p === "stats") renderStats();
+  else renderList();
+}
+window.addEventListener("hashchange", () => {
+  if (location.hash.startsWith("#item") && !document.querySelector(".form")) S.scrollY = S.scrollY || 0;
+  route();
+});
+document.addEventListener("click", e => {
+  const a = e.target.closest('a.card'); if (a) S.scrollY = window.scrollY;
+});
+$("#backBtn").onclick = () => { if (history.length > 1) history.back(); else location.hash = "#"; };
+$("#fab").onclick = () => { S.scrollY = window.scrollY; location.hash = "#new"; };
+$("#menuBtn").onclick = e => { e.stopPropagation(); $("#menu").classList.toggle("hidden"); };
+document.addEventListener("click", e => { if (!e.target.closest("#menu")) $("#menu").classList.add("hidden"); });
+$("#menu").onclick = async e => {
+  const act = e.target.closest("button")?.dataset.act; $("#menu").classList.add("hidden");
+  if (act === "stats") location.hash = "#stats";
+  if (act === "csv") exportCsv();
+  if (act === "refresh") { await refresh(true); toast("Collection actualisée"); }
+  if (act === "logout") { if (await confirmBox(DEMO ? "Réinitialiser les données de démo ?" : "Se déconnecter de OneDrive ?", DEMO ? "Réinitialiser" : "Se déconnecter")) { await idb.del("cache"); S.store.logout(); } }
+};
+if (DEMO) { $("#logoutBtn").lastChild.textContent = "Réinitialiser la démo"; $('[data-act="csv"]').classList.add("hidden"); }
+
+/* ================= Démarrage ================= */
+async function refresh(force){
+  setSync("loading");
+  try {
+    const {data, etag} = await S.store.load();
+    S.data = data; S.etag = etag; reindex();
+    if (!DEMO) await idb.set("cache", {data, etag});
+    setSync("ok");
+    if (force){ S.photosLoaded = false; }
+    route();
+  } catch(e){
+    console.error(e);
+    setSync(navigator.onLine ? "error" : "offline");
+    if (!S.data) view.innerHTML = `<div class="empty">Impossible de charger la collection.<br>${esc(e.message)}<br><br><button class="btn primary" onclick="refresh()">Réessayer</button></div>`;
+    else toast("Affichage de la dernière copie hors ligne");
+  }
+}
+async function start(){
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if (!DEMO){
+    const cached = await idb.get("cache");
+    if (cached){ S.data = cached.data; S.etag = cached.etag; reindex(); route(); setSync("offline", "Copie locale"); }
+  }
+  let logged = false;
+  try { logged = await S.store.init(); }
+  catch(e){ console.error(e); view.innerHTML = `<div class="empty">Erreur d'initialisation : ${esc(e.message)}</div>`; return; }
+  if (!logged){
+    header("Ma collection", "");
+    view.innerHTML = `<div class="login">${ICON_LOCO}<h2>Ma collection de trains</h2>
+      <p>Connecte-toi avec ton compte Microsoft pour ouvrir ta collection enregistrée dans OneDrive.</p>
+      <button class="btn primary" id="login">Se connecter avec Microsoft</button></div>`;
+    $("#login").onclick = () => S.store.login();
+    return;
+  }
+  await refresh();
+}
+start();
+</script>
+</body>
+</html>
